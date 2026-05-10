@@ -2,7 +2,7 @@
 name: whiteboard-iq
 description: Analyse a whiteboard photo and extract structured action items, decisions, and open questions into a visual summary card.
 metadata:
-  homepage: https://github.com/google-ai-edge/gallery/tree/main/skills/featured/whiteboard-iq
+  homepage: https://github.com/samirzubair/GEMMA4
 ---
 
 # WhiteboardIQ
@@ -17,6 +17,8 @@ This skill reads a whiteboard image provided by the user and extracts every acti
 - "Turn this whiteboard into action items"
 - "Read the whiteboard and give me a summary"
 - "Who owns what from this meeting?"
+
+---
 
 ## Instructions
 

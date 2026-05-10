@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WhiteboardIQ</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
+    --border: #2e3250; --accent: #7c6fff; --text: #e8eaf6;
+    --muted: #7b82a8; --high: #e05c5c; --medium: #e0a84a; --low: #4caf87;
+    --radius: 12px;
+  }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 14px; font-size: 14px; line-height: 1.5; }
+
+  .header { display: flex; gap: 12px; align-items: flex-start; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: var(--radius); margin-bottom: 12px; }
+  .header-icon { font-size: 26px; flex-shrink: 0; }
+  .meeting-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .summary { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .stats { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .chip { font-size: 11px; background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; color: var(--muted); }
+  .chip strong { color: var(--text); }
+
+  .section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 14px 0 6px; }
+
+  .action-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; position: relative; overflow: hidden; }
+  .action-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--priority-color, var(--border)); }
+  .action-card.high   { --priority-color: var(--high); }
+  .action-card.medium { --priority-color: var(--medium); }
+  .action-card.low    { --priority-color: var(--low); }
+  .action-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .action-task { font-size: 13px; font-weight: 600; line-height: 1.4; flex: 1; }
+  .badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+  .badge.high   { background: rgba(224,92,92,.15);  color: var(--high); }
+  .badge.medium { background: rgba(224,168,74,.15); color: var(--medium); }
+  .badge.low    { background: rgba(76,175,135,.15); color: var(--low); }
+  .meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--muted); }
+  .notes { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
+
+  .list-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 6px; display: flex; gap: 10px; }
+  .list-icon { font-size: 14px; flex-shrink: 0; }
+  .list-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  .empty { font-size: 12px; color: var(--muted); font-style: italic; padding: 6px 0; }
+  .footer { text-align: center; font-size: 10px; color: var(--border); margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .error { color: var(--high); font-size: 13px; padding: 20px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="root"><p class="empty" style="padding:20px;text-align:center">Loading…</p></div>
+<script>
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function pEmoji(p) { return {High:'🔴',Medium:'🟡',Low:'🟢'}[p] ?? '⚪'; }
+
+function render(data) {
+  const actions   = data.action_items || [];
+  const decisions = data.decisions    || [];
+  const questions = data.questions    || [];
+
+  const actionsHtml = actions.length ? actions.map(item => {
+    const cls = (item.priority || 'low').toLowerCase();
+    return `<div class="action-card ${cls}">
+      <div class="action-top">
+        <div class="action-task">${esc(item.task)}</div>
+        <span class="badge ${cls}">${pEmoji(item.priority)} ${esc(item.priority)}</span>
+      </div>
+      <div class="meta">
+        <span>👤 ${esc(item.owner || 'Unassigned')}</span>
+        <span>📅 ${esc(item.deadline || 'No deadline')}</span>
+      </div>
+      ${item.notes ? `<div class="notes">${esc(item.notes)}</div>` : ''}
+    </div>`;
+  }).join('') : '<p class="empty">No action items found.</p>';
+
+  const decisionsHtml = decisions.length
+    ? decisions.map(d => `<div class="list-card"><span class="list-icon">🏛️</span><span class="list-text">${esc(d)}</span></div>`).join('')
+    : '<p class="empty">None noted.</p>';
+
+  const questionsHtml = questions.length
+    ? questions.map(q => `<div class="list-card"><span class="list-icon">❓</span><span class="list-text">${esc(q)}</span></div>`).join('')
+    : '<p class="empty">None noted.</p>';
+
+  document.getElementById('root').innerHTML = `
+    <div class="header">
+      <div class="header-icon">🗒️</div>
+      <div>
+        <div class="meeting-title">${esc(data.meeting_context || 'Whiteboard Summary')}</div>
+        <div class="summary">${esc(data.summary || '')}</div>
+        <div class="stats">
+          <span class="chip"><strong>${actions.length}</strong> actions</span>
+          <span class="chip"><strong>${decisions.length}</strong> decisions</span>
+          <span class="chip"><strong>${questions.length}</strong> questions</span>
+        </div>
+      </div>
+    </div>
+    <div class="section-title">✅ Action Items</div>${actionsHtml}
+    <div class="section-title">🏛️ Decisions</div>${decisionsHtml}
+    <div class="section-title">❓ Open Questions</div>${questionsHtml}
+    <div class="footer">WhiteboardIQ · Gemma 4 · Google AI Edge Gallery</div>`;
+}
+
+// Read data from URL query param
+try {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('data');
+  if (!raw) throw new Error('No data param in URL');
+  render(JSON.parse(decodeURIComponent(raw)));
+} catch(e) {
+  document.getElementById('root').innerHTML = `<p class="error">⚠️ ${e.message}</p>`;
+}
+</script>
+</body>
+</html>

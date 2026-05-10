@@ -7,18 +7,16 @@ metadata:
 
 # WhiteboardIQ
 
-This skill reads a whiteboard image provided by the user and extracts every action item, decision, and open question into a structured, visual summary card.
+This skill reads a whiteboard image and extracts every action item, decision, and open question into a structured visual summary card.
 
 ## Examples
 
-- "Analyse this whiteboard"
-- "Extract action items from this photo"
-- "What are the tasks on this whiteboard?"
-- "Turn this whiteboard into action items"
-- "Read the whiteboard and give me a summary"
-- "Who owns what from this meeting?"
-
----
+* "Analyse this whiteboard"
+* "Extract action items from this photo"
+* "What are the tasks on this whiteboard?"
+* "Turn this whiteboard into action items"
+* "Read the whiteboard and give me a summary"
+* "Who owns what from this meeting?"
 
 ## Instructions
 
@@ -32,18 +30,12 @@ When the user shares a whiteboard image or asks you to analyse one, carefully re
     - task: String. Clear description of the task.
     - owner: String. Person's name visible near the task, or "Unassigned".
     - deadline: String. Any date or time reference visible (e.g. "EOW", "Friday", "Next sprint"), or "No deadline".
-    - priority: String. Must be exactly "High", "Medium", or "Low". Infer from visual cues — circled, starred, or underlined text = High; boxed text = Medium; plain text = Low.
+    - priority: String. Must be exactly "High", "Medium", or "Low". Infer from visual cues — circled or starred = High, boxed = Medium, plain = Low.
     - notes: String. Any sub-tasks or extra context. Empty string if none.
   - decisions: Array of strings. Each decision visibly recorded on the whiteboard.
   - questions: Array of strings. Open questions or blockers noted on the whiteboard.
 
-Priority rules:
-- Text that is circled, starred (*), underlined, or marked URGENT = High
-- Text inside a box or rectangle = Medium
-- Plain unmarked text = Low
-- A name written directly beside or below a task = that person is the owner
-
-DO NOT fabricate tasks, owners, or deadlines that are not visible on the whiteboard.
+DO NOT fabricate tasks, owners, or deadlines not visible on the whiteboard.
 DO NOT use `run_intent`.
 DO NOT call any other tool.
 

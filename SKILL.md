@@ -20,23 +20,21 @@ This skill reads a whiteboard image and extracts every action item, decision, an
 
 ## Instructions
 
-When the user shares a whiteboard image or asks you to analyse one, carefully read every piece of text visible on the whiteboard. Then call the `run_js` tool with the following exact parameters:
+When the user shares a whiteboard image or asks you to analyse one, carefully read every piece of text visible on the whiteboard. Then call the `run_js` tool using `index.html` and a JSON string for `data` with the following fields:
 
-- data: A JSON string with the following fields:
-  - meeting_context: String. A short title describing what this whiteboard session was about (e.g. "Sprint planning", "Q3 roadmap").
-  - summary: String. A 2-3 sentence plain-English executive summary of the whiteboard.
-  - action_items: Array of objects, each with:
-    - id: Number. Sequential starting from 1.
-    - task: String. Clear description of the task.
-    - owner: String. Person's name visible near the task, or "Unassigned".
-    - deadline: String. Any date or time reference visible (e.g. "EOW", "Friday", "Next sprint"), or "No deadline".
-    - priority: String. Must be exactly "High", "Medium", or "Low". Infer from visual cues — circled or starred = High, boxed = Medium, plain = Low.
-    - notes: String. Any sub-tasks or extra context. Empty string if none.
-  - decisions: Array of strings. Each decision visibly recorded on the whiteboard.
-  - questions: Array of strings. Open questions or blockers noted on the whiteboard.
+- **meeting_context**: String. A short title describing what this whiteboard session was about.
+- **summary**: String. A 2-3 sentence plain-English executive summary of the whiteboard.
+- **action_items**: Array of objects, each with:
+  - id: Number. Sequential starting from 1.
+  - task: String. Clear description of the task.
+  - owner: String. Person's name visible near the task, or "Unassigned".
+  - deadline: String. Any date or time reference visible, or "No deadline".
+  - priority: String. Exactly "High", "Medium", or "Low". Circled or starred = High, boxed = Medium, plain = Low.
+  - notes: String. Any extra context. Empty string if none.
+- **decisions**: Array of strings. Each decision recorded on the whiteboard.
+- **questions**: Array of strings. Open questions or blockers noted on the whiteboard.
 
 DO NOT fabricate tasks, owners, or deadlines not visible on the whiteboard.
-DO NOT use `run_intent`.
-DO NOT call any other tool.
+DO NOT use `run_intent`. DO NOT call any other tool.
 
-After returning the skill result, give a one-line summary such as: "Found X action items across Y owners."
+After returning the result, say: "Found X action items across Y owners."

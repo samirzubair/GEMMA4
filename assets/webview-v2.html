@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WhiteboardIQ V2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
+    --border: #2e3250; --accent: #7c6fff; --text: #e8eaf6;
+    --muted: #7b82a8; --high: #e05c5c; --medium: #e0a84a; --low: #4caf87;
+    --radius: 12px;
+  }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 14px; font-size: 14px; line-height: 1.5; }
+
+  /* ── Voice Panel ── */
+  .voice-panel {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .voice-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .voice-controls { display: flex; gap: 6px; flex: 1; }
+  .voice-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+    white-space: nowrap;
+  }
+  .voice-btn:hover { background: var(--border); border-color: var(--accent); }
+  .voice-btn:disabled { opacity: .35; cursor: not-allowed; }
+  .voice-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* Animated speaking indicator */
+  .speaking-indicator {
+    display: none;
+    align-items: center;
+    gap: 3px;
+    margin-left: 4px;
+  }
+  .speaking-indicator.visible { display: flex; }
+  .speaking-indicator span {
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: wave 0.8s ease-in-out infinite;
+  }
+  .speaking-indicator span:nth-child(2) { animation-delay: .12s; height: 20px; }
+  .speaking-indicator span:nth-child(3) { animation-delay: .24s; }
+  .speaking-indicator span:nth-child(4) { animation-delay: .12s; height: 20px; }
+  .speaking-indicator span:nth-child(5) { animation-delay: 0s; }
+  @keyframes wave {
+    0%, 100% { transform: scaleY(1); }
+    50%       { transform: scaleY(0.3); }
+  }
+
+  /* ── Existing V1 styles ── */
+  .header { display: flex; gap: 12px; align-items: flex-start; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: var(--radius); margin-bottom: 12px; }
+  .header-icon { font-size: 26px; flex-shrink: 0; }
+  .meeting-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .summary { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .stats { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .chip { font-size: 11px; background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; color: var(--muted); }
+  .chip strong { color: var(--text); }
+
+  .section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 14px 0 6px; }
+
+  .action-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; position: relative; overflow: hidden; }
+  .action-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--priority-color, var(--border)); }
+  .action-card.high   { --priority-color: var(--high); }
+  .action-card.medium { --priority-color: var(--medium); }
+  .action-card.low    { --priority-color: var(--low); }
+  .action-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .action-task { font-size: 13px; font-weight: 600; line-height: 1.4; flex: 1; }
+  .badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+  .badge.high   { background: rgba(224,92,92,.15);  color: var(--high); }
+  .badge.medium { background: rgba(224,168,74,.15); color: var(--medium); }
+  .badge.low    { background: rgba(76,175,135,.15); color: var(--low); }
+  .meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--muted); }
+  .notes { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
+
+  .list-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 6px; display: flex; gap: 10px; }
+  .list-icon { font-size: 14px; flex-shrink: 0; }
+  .list-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  .empty { font-size: 12px; color: var(--muted); font-style: italic; padding: 6px 0; }
+  .footer { text-align: center; font-size: 10px; color: var(--border); margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .error { color: var(--high); font-size: 13px; padding: 20px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- Voice narration panel (always rendered first) -->
+<div class="voice-panel" id="voice-panel" style="display:none">
+  <span class="voice-label">🔊 Voice</span>
+  <div class="voice-controls">
+    <button class="voice-btn" id="btn-play" onclick="voicePlay()">▶ Play</button>
+    <button class="voice-btn" id="btn-pause" onclick="voicePause()" disabled>⏸ Pause</button>
+    <button class="voice-btn" id="btn-stop" onclick="voiceStop()" disabled>⏹ Stop</button>
+  </div>
+  <div class="speaking-indicator" id="speak-indicator">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+</div>
+
+<div id="root"><p class="empty" style="padding:20px;text-align:center">Loading…</p></div>
+
+<script>
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function pEmoji(p) { return {High:'🔴',Medium:'🟡',Low:'🟢'}[p] ?? '⚪'; }
+
+function render(data) {
+  const actions   = data.action_items || [];
+  const decisions = data.decisions    || [];
+  const questions = data.questions    || [];
+
+  const actionsHtml = actions.length ? actions.map(item => {
+    const cls = (item.priority || 'low').toLowerCase();
+    return `<div class="action-card ${cls}">
+      <div class="action-top">
+        <div class="action-task">${esc(item.task)}</div>
+        <span class="badge ${cls}">${pEmoji(item.priority)} ${esc(item.priority)}</span>
+      </div>
+      <div class="meta">
+        <span>👤 ${esc(item.owner || 'Unassigned')}</span>
+        <span>📅 ${esc(item.deadline || 'No deadline')}</span>
+      </div>
+      ${item.notes ? `<div class="notes">${esc(item.notes)}</div>` : ''}
+    </div>`;
+  }).join('') : '<p class="empty">No action items found.</p>';
+
+  const decisionsHtml = decisions.length
+    ? decisions.map(d => `<div class="list-card"><span class="list-icon">🏛️</span><span class="list-text">${esc(d)}</span></div>`).join('')
+    : '<p class="empty">None noted.</p>';
+
+  const questionsHtml = questions.length
+    ? questions.map(q => `<div class="list-card"><span class="list-icon">❓</span><span class="list-text">${esc(q)}</span></div>`).join('')
+    : '<p class="empty">None noted.</p>';
+
+  document.getElementById('root').innerHTML = `
+    <div class="header">
+      <div class="header-icon">🗒️</div>
+      <div>
+        <div class="meeting-title">${esc(data.meeting_context || 'Whiteboard Summary')}</div>
+        <div class="summary">${esc(data.summary || '')}</div>
+        <div class="stats">
+          <span class="chip"><strong>${actions.length}</strong> actions</span>
+          <span class="chip"><strong>${decisions.length}</strong> decisions</span>
+          <span class="chip"><strong>${questions.length}</strong> questions</span>
+        </div>
+      </div>
+    </div>
+    <div class="section-title">✅ Action Items</div>${actionsHtml}
+    <div class="section-title">🏛️ Decisions</div>${decisionsHtml}
+    <div class="section-title">❓ Open Questions</div>${questionsHtml}
+    <div class="footer">WhiteboardIQ V2 · Multimodal Voice · Gemma 4 · Google AI Edge Gallery</div>`;
+}
+
+// ── Voice Narration ──────────────────────────────────────────────
+let _speechQueue = [];
+let _currentIdx  = 0;
+let _isPaused    = false;
+
+function buildSpeechQueue(data) {
+  const q = [];
+  const actions   = data.action_items || [];
+  const decisions = data.decisions    || [];
+  const questions = data.questions    || [];
+
+  // 1. Summary
+  q.push(`WhiteboardIQ summary for ${data.meeting_context || 'this session'}. ${data.summary || ''}`);
+
+  // 2. Action items
+  if (actions.length) {
+    q.push(`Action items. ${actions.length} task${actions.length !== 1 ? 's' : ''}.`);
+    actions.forEach((item, i) => {
+      const owner    = item.owner    || 'Unassigned';
+      const deadline = item.deadline || 'No deadline';
+      const priority = item.priority || 'Low';
+      q.push(`Task ${i + 1}: ${item.task}. Owner: ${owner}. Due: ${deadline}. Priority: ${priority}.`);
+    });
+  } else {
+    q.push('No action items found.');
+  }
+
+  // 3. Decisions
+  if (decisions.length) {
+    q.push(`Decisions. ${decisions.length} recorded.`);
+    decisions.forEach(d => q.push(d));
+  } else {
+    q.push('No decisions noted.');
+  }
+
+  // 4. Open questions
+  if (questions.length) {
+    q.push(`Open questions. ${questions.length} item${questions.length !== 1 ? 's' : ''}.`);
+    questions.forEach(q2 => q.push(q2));
+  } else {
+    q.push('No open questions noted.');
+  }
+
+  return q;
+}
+
+function speakNext() {
+  if (_currentIdx >= _speechQueue.length) {
+    voiceReset();
+    return;
+  }
+  const utt = new SpeechSynthesisUtterance(_speechQueue[_currentIdx]);
+  utt.rate = 1.0;
+  utt.pitch = 1.0;
+  utt.onend = () => {
+    _currentIdx++;
+    speakNext();
+  };
+  utt.onerror = () => {
+    _currentIdx++;
+    speakNext();
+  };
+  window.speechSynthesis.speak(utt);
+}
+
+function voicePlay() {
+  if (_isPaused) {
+    _isPaused = false;
+    window.speechSynthesis.resume();
+    document.getElementById('btn-play').disabled  = true;
+    document.getElementById('btn-pause').disabled = false;
+    document.getElementById('btn-pause').textContent = '⏸ Pause';
+    document.getElementById('speak-indicator').classList.add('visible');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  _currentIdx = 0;
+  _isPaused   = false;
+  document.getElementById('btn-play').disabled  = true;
+  document.getElementById('btn-pause').disabled = false;
+  document.getElementById('btn-stop').disabled  = false;
+  document.getElementById('speak-indicator').classList.add('visible');
+  speakNext();
+}
+
+function voicePause() {
+  if (_isPaused) return;
+  _isPaused = true;
+  window.speechSynthesis.pause();
+  document.getElementById('btn-play').disabled  = false;
+  document.getElementById('btn-play').textContent = '▶ Resume';
+  document.getElementById('btn-pause').disabled = true;
+  document.getElementById('speak-indicator').classList.remove('visible');
+}
+
+function voiceStop() {
+  window.speechSynthesis.cancel();
+  voiceReset();
+}
+
+function voiceReset() {
+  _currentIdx = 0;
+  _isPaused   = false;
+  const btnPlay  = document.getElementById('btn-play');
+  const btnPause = document.getElementById('btn-pause');
+  const btnStop  = document.getElementById('btn-stop');
+  if (btnPlay)  { btnPlay.disabled  = false; btnPlay.textContent = '▶ Play'; }
+  if (btnPause) { btnPause.disabled = true; }
+  if (btnStop)  { btnStop.disabled  = true; }
+  const ind = document.getElementById('speak-indicator');
+  if (ind) ind.classList.remove('visible');
+}
+
+// Space bar shortcut: play/pause
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && e.target === document.body) {
+    e.preventDefault();
+    const btnPlay = document.getElementById('btn-play');
+    if (!btnPlay || btnPlay.disabled) {
+      voicePause();
+    } else {
+      voicePlay();
+    }
+  }
+});
+
+// ── Bootstrap ────────────────────────────────────────────────────
+try {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('data');
+  if (!raw) throw new Error('No data param in URL');
+  const data = JSON.parse(decodeURIComponent(raw));
+  render(data);
+
+  // Build speech queue and show voice panel
+  _speechQueue = buildSpeechQueue(data);
+  document.getElementById('voice-panel').style.display = 'flex';
+} catch(e) {
+  document.getElementById('root').innerHTML = `<p class="error">⚠️ ${e.message}</p>`;
+}
+</script>
+</body>
+</html>

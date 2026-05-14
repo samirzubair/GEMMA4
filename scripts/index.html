@@ -10,7 +10,7 @@ window['ai_edge_gallery_get_result'] = async (data, secret) => {
     // Validate the JSON is parseable before sending
     JSON.parse(data);
 
-    const baseUrl = 'https://samirzubair.github.io/GEMMA4/assets/webview.html';
+    const baseUrl = 'https://samirzubair.github.io/GEMMA4/assets/webview-v2.html';
     const url = baseUrl + '?data=' + encodeURIComponent(data);
 
     return JSON.stringify({

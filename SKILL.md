@@ -1,6 +1,6 @@
 ---
 name: whiteboard-iq
-description: Analyse a whiteboard photo and extract structured action items, decisions, and open questions into a visual summary card.
+description: Analyse a whiteboard photo and extract structured action items, decisions, and open questions into a visual summary card with voice narration.
 metadata:
   homepage: https://github.com/samirzubair/GEMMA4
 ---
@@ -37,4 +37,4 @@ When the user shares a whiteboard image or asks you to analyse one, carefully re
 DO NOT fabricate tasks, owners, or deadlines not visible on the whiteboard.
 DO NOT use `run_intent`. DO NOT call any other tool.
 
-After returning the result, say: "Found X action items across Y owners."
+After returning the result, say: "Found X action items across Y owners. Tap ▶ Play in the card to hear the summary read aloud."
